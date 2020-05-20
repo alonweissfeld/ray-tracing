@@ -32,14 +32,12 @@ public class DirectionalLight extends Light {
 
 	@Override
 	public Ray rayToLight(Point fromPoint) {
-		// TODO: Implement this.
-		throw new UnimplementedMethodException("DirectionalLight.rayToLight");
+		return new Ray(fromPoint, this.direction.neg());
 	}
 
 	@Override
 	public boolean isOccludedBy(Surface surface, Ray rayToLight) {
-		// TODO: Implement this.
-		throw new UnimplementedMethodException("DirectionalLight.isOccludedBy");
+		return surface.intersect(rayToLight) != null;
 	}
 
 	@Override

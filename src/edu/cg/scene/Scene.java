@@ -186,7 +186,19 @@ public class Scene {
 			return this.backgroundColor;
 		}
 
-		return this.backgroundColor;
+		// Defines the ambient reflections of the surface within the scene.
+		Vec colorVec = minHit.getSurface().Ka().mult(this.ambient);
+
+		// Calculates the intersections of the current intersection point
+		// with the different light sources. This is done by emitting
+		// rays from the current point to the light sources.
+		Point hitPoint = ray.getHittingPoint(minHit);
+		for (Light light : this.lightSources) {
+			Vec colorBySource = this.calcColorByLightSource(hitPoint, light);
+			color = color.add(colorBySource);
+		}
+
+		return colorVec;
 	}
 
 	private Hit findMinIntersection(Ray ray){
@@ -198,5 +210,20 @@ public class Scene {
 			}
 		}
 		return minIntersection;
+	}
+
+	private Vec calcColorFromLightSource(Point p, Light l) {
+		Ray rayToLight = l.rayToLight(p);
+		// check if light is occluded...
+		// if it is not, calculate diffuse, specular, etc...
+	}
+
+	private boolean isLightOccluded(Light light, Ray ray){
+		for (Surface surface : this.surfaces) {
+			if (light.isOccludedBy(surface, ray)){
+				return true;
+			}
+		}
+		return false;
 	}
 }
