@@ -198,6 +198,11 @@ public class Scene {
 			colorVec = colorVec.add(this.calcReflections(minHit, ray, recursionLevel));
 		}
 
+		Surface surface = minHit.getSurface();
+		if (this.renderRefarctions && surface.isTransparent()) {
+			colorVec = colorVec.add(this.calcRefractions(minHit, ray, recursionLevel, surface));
+		}
+
 		return colorVec;
 	}
 
@@ -206,8 +211,19 @@ public class Scene {
 		Vec w = new Vec(hit.getSurface().refractionIntensity()); // reflection intensity weight
 
 		Point sourcePoint = ray.getHittingPoint(hit);
-		Vec color = this.calcColor(new Ray(sourcePoint, R.normalize()), recLevel + 1);
+		Vec color = this.calcColor(new Ray(sourcePoint, R), recLevel + 1);
 		return color.mult(w); // Apply the surface weight
+	}
+
+	private Vec calcRefractions(Hit hit, Ray ray, int recLevel, Surface surface) {
+		double n1 = surface.n1(hit);
+		double n2 = surface.n2(hit);
+		Vec T = Ops.refract(ray.direction(), hit.getNormalToSurface(), n1, n2);
+		Vec w = new Vec(surface.refractionIntensity());
+
+		Point sourcePoint = ray.getHittingPoint(hit);
+		Vec color = this.calcColor(new Ray(sourcePoint, T), recLevel + 1);
+		return color.mult(w);
 	}
 
 	private Hit findMinIntersection(Ray ray){
@@ -224,7 +240,7 @@ public class Scene {
 	/**
 	 * Calculate the diffuse and specular attributes
 	 * for the given point with the given light source.
-	 * @param point
+	 * @param
 	 * @param light
 	 * @return
 	 */
@@ -234,9 +250,13 @@ public class Scene {
 		Ray rayToLight = light.rayToLight(hitPoint);
 
 		if (!isLightOccluded(light, rayToLight)) {
+			// Calculate the Diffuse ans Specular color attributes
+			Vec diffuseCol = this.getDiffuse(hit, rayToLight);
+			Vec specularCol = this.getSpecular(hit, rayToLight, rayFromCamera);
+
+			// Apply the light intensity weight to the physics additions.
 			Vec intensity = light.intensity(hitPoint, rayToLight);
-			color = color.add(this.getDiffuse(hit, rayToLight, intensity));
-			color = color.add(this.getSpecular(hit, rayToLight, rayFromCamera, intensity));
+			color = color.add(diffuseCol.add(specularCol).mult(intensity));
 		}
 
 		return color;
@@ -251,21 +271,24 @@ public class Scene {
 		return false;
 	}
 
-	private Vec getDiffuse(Hit hit, Ray rayToLight, Vec intensity) {
+	private Vec getDiffuse(Hit hit, Ray rayToLight) {
 		Vec normal = hit.getNormalToSurface();
 		Vec L = rayToLight.direction();
 		Vec Kd = hit.getSurface().Kd();
-		return Kd.mult(intensity).mult(normal.dot(L));
+
+		double dot = normal.dot(L);
+		return (dot < 0) ? new Vec() : Kd.mult(dot);
 	}
 
-	private Vec getSpecular(Hit hit, Ray rayToLight, Ray rayFromCamera, Vec intensity) {
-		Surface s =  hit.getSurface();
-		Vec Ks = s.Ks();
-		int n = s.shininess();
+	private Vec getSpecular(Hit hit, Ray rayToLight, Ray rayFromCamera) {
+		Surface surface =  hit.getSurface();
+		Vec Ks = surface.Ks();
+		int n = surface.shininess();
 
-		Vec V = rayFromCamera.direction();
-		Vec Lc = Ops.reflect(rayToLight.direction().neg(), hit.getNormalToSurface());
+		Vec V = rayFromCamera.direction().neg();
+		Vec Lc = Ops.reflect(rayToLight.direction(), hit.getNormalToSurface());
 
-		return Ks.mult(intensity).mult(Math.pow(V.dot(Lc), n));
+		double dot = Lc.dot(V);
+		return (dot < 0) ? new Vec() : Ks.mult(Math.pow(dot, n));
 	}
 }

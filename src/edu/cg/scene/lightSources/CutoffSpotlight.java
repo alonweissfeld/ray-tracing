@@ -49,21 +49,34 @@ public class CutoffSpotlight extends PointLight {
 
 	@Override
 	public boolean isOccludedBy(Surface surface, Ray rayToLight) {
-		// Calculate the angle between the given ray and the direction of ths spotlight
-		double angle = rayToLight.direction().neg().dot(this.direction.normalize());
-		if (angle > this.cutoffAngle) return true;
-
-		// The cutoff angle contain our ray.
-		return super.isOccludedBy(surface, rayToLight);
+		double cosineAngle = this.cosGamma(rayToLight);
+		return cosineAngle < Ops.epsilon || super.isOccludedBy(surface, rayToLight);
 	}
 
 	@Override
 	public Vec intensity(Point hittingPoint, Ray rayToLight) {
-		Vec Vd = this.direction.normalize().neg();
-		Vec V = rayToLight.direction();
+		// Extract the angle in degrees from the cos(gamma) value obtained
+		// from the dot product of the direction of the light with the given ray.
+		double cosineAngle = this.cosGamma(rayToLight);
+		double degAngle = Math.toDegrees(Math.acos(cosineAngle));
 
-		// Calculate the attenuation factor using the PointLight model.
-		Vec f = super.intensity(hittingPoint, rayToLight);
-		return f.mult(V.dot(Vd));
+		if (cosineAngle < Ops.epsilon || degAngle > this.cutoffAngle) {
+			return new Vec(0);
+		}
+
+		Vec i = super.intensity(hittingPoint, rayToLight);
+		return i.mult(cosineAngle);
+	}
+
+	/**
+	 * Calculate the cosine of the angle between the given ray and the
+	 * direction of ths spotlight.
+	 * @param rayToLight
+	 * @return
+	 */
+	public double cosGamma(Ray rayToLight) {
+		Vec Vd = this.direction.normalize().neg();
+		Vec V = rayToLight.direction().normalize();
+		return V.dot(Vd);
 	}
 }

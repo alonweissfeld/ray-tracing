@@ -19,7 +19,7 @@ public class PointLight extends Light {
 	// Decay factors:
 	protected double kq = 0.01;
 	protected double kl = 0.1;
-	protected double kc = 1;
+	protected double kc = 1.0;
 
 	protected String description() {
 		String endl = System.lineSeparator();
@@ -71,6 +71,7 @@ public class PointLight extends Light {
 	public Vec intensity(Point hittingPoint, Ray rayToLight) {
 		double dist = hittingPoint.dist(position);
 		double decay = kc + (kl + kq * dist) * dist;
-		return intensity.mult(1 / decay);
+		return intensity.mult(1.0 / decay);
 	}
+
 }
