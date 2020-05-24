@@ -208,7 +208,7 @@ public class Scene {
 
 	private Vec calcReflections(Hit hit, Ray ray, int recLevel) {
 		Vec R = Ops.reflect(ray.direction(), hit.getNormalToSurface()); // reflection ray
-		Vec w = new Vec(hit.getSurface().refractionIntensity()); // reflection intensity weight
+		Vec w = new Vec(hit.getSurface().reflectionIntensity()); // reflection intensity weight
 
 		Point sourcePoint = ray.getHittingPoint(hit);
 		Vec color = this.calcColor(new Ray(sourcePoint, R), recLevel + 1);
@@ -285,10 +285,10 @@ public class Scene {
 		Vec Ks = surface.Ks();
 		int n = surface.shininess();
 
-		Vec V = rayFromCamera.direction().neg();
-		Vec Lc = Ops.reflect(rayToLight.direction(), hit.getNormalToSurface());
+		Vec V = rayFromCamera.direction();
+		Vec Lc = Ops.reflect(rayToLight.direction().neg(), hit.getNormalToSurface());
 
-		double dot = Lc.dot(V);
+		double dot = Lc.dot(V.neg());
 		return (dot < 0) ? new Vec() : Ks.mult(Math.pow(dot, n));
 	}
 }
