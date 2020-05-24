@@ -5,15 +5,17 @@ import edu.cg.algebra.Point;
 import edu.cg.algebra.Vec;
 
 public class PinholeCamera {
-	Point cameraPosition;
-	Vec towardsVec;
-	Vec upVec;
-	double distanceToPlain;
-	Vec rightVec;
-	Point centerPoint;
-	int plainHeight;
-	int plainWidth;
-	double pixelWidth;
+	private Point cameraPosition;
+	private double distanceToPlain;
+
+	private Vec upVec;
+	private Vec rightVec;
+
+	private double plainWidth;
+	private Point plainCenterPoint;
+
+	private int resolutionX;
+	private int resolutionY;
 
 	/**
 	 * Initializes a pinhole camera model with default resolution 200X200 (RxXRy)
@@ -29,12 +31,12 @@ public class PinholeCamera {
 	 */
 	public PinholeCamera(Point cameraPosition, Vec towardsVec, Vec upVec, double distanceToPlain) {
 		this.cameraPosition = cameraPosition;
-		this.towardsVec = towardsVec.normalize();
-		this.upVec = upVec.normalize();
-		this.distanceToPlain = distanceToPlain;
-		this.rightVec = towardsVec.cross(upVec).normalize();
-		this.centerPoint = cameraPosition.add(towardsVec.normalize().mult(distanceToPlain));
 
+		this.upVec = upVec.normalize();
+		this.rightVec = towardsVec.normalize().cross(upVec).normalize();
+
+		this.distanceToPlain = distanceToPlain;
+		this.plainCenterPoint = cameraPosition.add(towardsVec.normalize().mult(distanceToPlain));
 	}
 
 	/**
@@ -45,10 +47,9 @@ public class PinholeCamera {
 	 * @param viewAngle - the view Angle.
 	 */
 	public void initResolution(int height, int width, double viewAngle) {
-		this.plainHeight = height;
-		this.plainWidth = width;
-		this.pixelWidth = this.plainWidth / viewAngle;
-
+		this.resolutionX = width;
+		this.resolutionY = height;
+		this.plainWidth = 2.0 * Math.tan(Math.toRadians(viewAngle / 2.0)) * this.distanceToPlain;
 	}
 
 	/**
@@ -60,11 +61,12 @@ public class PinholeCamera {
 	 * @return the middle point of the pixel (x,y) in the model coordinates.
 	 */
 	public Point transform(int x, int y) {
-		double rightFactor = pixelWidth * (x - (this.plainWidth / 2.0));
-		// TODO: check upFactor - heightAngle, and either we need (int) casting
-		double upFactor = pixelWidth * ((this.plainHeight / 2.0) - y);
+		double pixelWidth = this.plainWidth / this.resolutionX;
 
-		return centerPoint
+		double rightFactor = pixelWidth * (x - (this.resolutionX / 2.0));
+		double upFactor = pixelWidth * ((this.resolutionY / 2.0) - y);
+
+		return plainCenterPoint
 				.add(upVec.mult(upFactor))
 				.add(rightVec.mult(rightFactor));
 	}

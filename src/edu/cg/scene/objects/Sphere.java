@@ -39,7 +39,8 @@ public class Sphere extends Shape {
 		double b = ray.direction().mult(2.0).dot(ray.source().sub(this.center));
 		double c = ray.source().distSqr(this.center) - Math.pow(this.radius, 2);
 		// a = 1
-		double delta = Math.pow(b, 2) - 4 * c;
+		double delta = Math.pow(b, 2) - 4.0 * c;
+
 		if (delta >= 0) {
 			double t0 = ( - b - Math.sqrt(delta)) / 2.0;
 			double t1 = ( - b + Math.sqrt(delta)) / 2.0;
