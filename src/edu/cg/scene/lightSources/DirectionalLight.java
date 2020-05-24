@@ -42,8 +42,7 @@ public class DirectionalLight extends Light {
 
 	@Override
 	public Vec intensity(Point hittingPoint, Ray rayToLight) {
-		// TODO: Implement this.
-		throw new UnimplementedMethodException("DirectionalLight.intensity");
+		return this.intensity;
 	}
 
 }

@@ -11,10 +11,7 @@ import java.util.concurrent.Future;
 
 import edu.cg.Logger;
 import edu.cg.UnimplementedMethodException;
-import edu.cg.algebra.Point;
-import edu.cg.algebra.Ray;
-import edu.cg.algebra.Vec;
-import edu.cg.algebra.Hit;
+import edu.cg.algebra.*;
 import edu.cg.scene.camera.PinholeCamera;
 import edu.cg.scene.lightSources.Light;
 import edu.cg.scene.objects.Surface;
@@ -192,10 +189,9 @@ public class Scene {
 		// Calculates the intersections of the current intersection point
 		// with the different light sources. This is done by emitting
 		// rays from the current point to the light sources.
-		Point hitPoint = ray.getHittingPoint(minHit);
 		for (Light light : this.lightSources) {
-			Vec colorBySource = this.calcColorByLightSource(hitPoint, light);
-			color = color.add(colorBySource);
+			Vec colorBySource = this.calcColorByLightSource(ray, minHit, light);
+			colorVec = colorVec.add(colorBySource);
 		}
 
 		return colorVec;
@@ -212,10 +208,25 @@ public class Scene {
 		return minIntersection;
 	}
 
-	private Vec calcColorFromLightSource(Point p, Light l) {
-		Ray rayToLight = l.rayToLight(p);
-		// check if light is occluded...
-		// if it is not, calculate diffuse, specular, etc...
+	/**
+	 * Calculate the diffuse and specular attributes
+	 * for the given point with the given light source.
+	 * @param point
+	 * @param light
+	 * @return
+	 */
+	private Vec calcColorByLightSource(Ray rayFromCamera, Hit hit, Light light) {
+		Vec color = new Vec(0);
+		Point hitPoint = rayFromCamera.getHittingPoint(hit);
+		Ray rayToLight = light.rayToLight(hitPoint);
+
+		if (!isLightOccluded(light, rayToLight)) {
+			Vec intensity = light.intensity(hitPoint, rayToLight);
+			color = color.add(this.getDiffuse(hit, rayToLight, intensity));
+			color = color.add(this.getSpecular(hit, rayToLight, rayFromCamera, intensity));
+		}
+
+		return color;
 	}
 
 	private boolean isLightOccluded(Light light, Ray ray){
@@ -225,5 +236,23 @@ public class Scene {
 			}
 		}
 		return false;
+	}
+
+	private Vec getDiffuse(Hit hit, Ray rayToLight, Vec intensity) {
+		Vec normal = hit.getNormalToSurface();
+		Vec L = rayToLight.direction();
+		Vec Kd = hit.getSurface().Kd();
+		return Kd.mult(intensity).mult(normal.dot(L));
+	}
+
+	private Vec getSpecular(Hit hit, Ray rayToLight, Ray rayFromCamera, Vec intensity) {
+		Surface s =  hit.getSurface();
+		Vec Ks = s.Ks();
+		int n = s.shininess();
+
+		Vec V = rayFromCamera.direction();
+		Vec Lc = Ops.reflect(rayToLight.direction().neg(), hit.getNormalToSurface());
+
+		return Ks.mult(intensity).mult(Math.pow(V.dot(Lc), n));
 	}
 }

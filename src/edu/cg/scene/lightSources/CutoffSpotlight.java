@@ -49,13 +49,21 @@ public class CutoffSpotlight extends PointLight {
 
 	@Override
 	public boolean isOccludedBy(Surface surface, Ray rayToLight) {
-		// TODO: implement this method.
-		throw new UnimplementedMethodException("CutoffSpotlight.isOccludedBy is not implemented.");
+		// Calculate the angle between the given ray and the direction of ths spotlight
+		double angle = rayToLight.direction().neg().dot(this.direction.normalize());
+		if (angle > this.cutoffAngle) return true;
+
+		// The cutoff angle contain our ray.
+		return super.isOccludedBy(surface, rayToLight);
 	}
 
 	@Override
 	public Vec intensity(Point hittingPoint, Ray rayToLight) {
-		// TODO: implement this method.
-		throw new UnimplementedMethodException("CutoffSpotlight.intensity is not implemented.");
+		Vec Vd = this.direction.normalize().neg();
+		Vec V = rayToLight.direction();
+
+		// Calculate the attenuation factor using the PointLight model.
+		Vec f = super.intensity(hittingPoint, rayToLight);
+		return f.mult(V.dot(Vd));
 	}
 }
