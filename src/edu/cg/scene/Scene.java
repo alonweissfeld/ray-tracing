@@ -194,7 +194,20 @@ public class Scene {
 			colorVec = colorVec.add(colorBySource);
 		}
 
+		if (this.renderReflections) {
+			colorVec = colorVec.add(this.calcReflections(minHit, ray, recursionLevel));
+		}
+
 		return colorVec;
+	}
+
+	private Vec calcReflections(Hit hit, Ray ray, int recLevel) {
+		Vec R = Ops.reflect(ray.direction(), hit.getNormalToSurface()); // reflection ray
+		Vec w = new Vec(hit.getSurface().refractionIntensity()); // reflection intensity weight
+
+		Point sourcePoint = ray.getHittingPoint(hit);
+		Vec color = this.calcColor(new Ray(sourcePoint, R.normalize()), recLevel + 1);
+		return color.mult(w); // Apply the surface weight
 	}
 
 	private Hit findMinIntersection(Ray ray){
