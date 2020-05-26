@@ -70,9 +70,9 @@ public class CutoffSpotlight extends PointLight {
 
 	/**
 	 * Calculate the cosine of the angle between the given ray and the
-	 * direction of ths spotlight.
-	 * @param rayToLight
-	 * @return
+	 * direction of this spotlight.
+	 * @param rayToLight - given ray to the light
+	 * @return the cosine of the angle.
 	 */
 	public double cosGamma(Ray rayToLight) {
 		Vec Vd = this.direction.normalize().neg();

@@ -171,12 +171,12 @@ public class Scene {
 	}
 
 	private Vec calcColor(Ray ray, int recursionLevel) {
-		// TODO: decide whether we want to improve finding intersection - fast reject
-		// base case
 		if (recursionLevel >= maxRecursionLevel) {
+			// Base case
 			return new Vec();
 		}
 
+		// Get the nearest intersection with the current ray
 		Hit minHit = this.findMinIntersection(ray);
 
 		if (minHit == null){
@@ -206,6 +206,15 @@ public class Scene {
 		return colorVec;
 	}
 
+	/**
+	 * Defines the recursive calculations for tracing reflections.
+	 * Using the "Law of Reflection", we create the reflected ray from
+	 * the given hit point with a surface to further color the digested pixel.
+	 * @param hit - given hit
+	 * @param ray - given ray
+	 * @param recLevel - recursive calls limit
+	 * @return a color vector.
+	 */
 	private Vec calcReflections(Hit hit, Ray ray, int recLevel) {
 		Vec R = Ops.reflect(ray.direction(), hit.getNormalToSurface()); // reflection ray
 		Vec w = new Vec(hit.getSurface().reflectionIntensity()); // reflection intensity weight
@@ -215,6 +224,14 @@ public class Scene {
 		return color.mult(w); // Apply the surface weight
 	}
 
+	/**
+	 *
+	 * @param hit
+	 * @param ray
+	 * @param recLevel
+	 * @param surface
+	 * @return
+	 */
 	private Vec calcRefractions(Hit hit, Ray ray, int recLevel, Surface surface) {
 		double n1 = surface.n1(hit);
 		double n2 = surface.n2(hit);
@@ -226,6 +243,12 @@ public class Scene {
 		return color.mult(w);
 	}
 
+	/**
+	 * Iterates through all surfaces in the Scene, and returns the
+	 * nearest intersection with a given ray.
+	 * @param ray - given ray
+	 * @return the nearest hit
+	 */
 	private Hit findMinIntersection(Ray ray){
 		Hit minIntersection = null;
 		for (Surface surface : this.surfaces){
@@ -239,10 +262,11 @@ public class Scene {
 
 	/**
 	 * Calculate the diffuse and specular attributes
-	 * for the given point with the given light source.
-	 * @param
-	 * @param light
-	 * @return
+	 * for the given intersection with the given light source.
+	 * @param rayFromCamera - the ray from the camera's view
+	 * @param hit - the intersection hit
+	 * @param light - the light source
+	 * @return a color vector.
 	 */
 	private Vec calcColorByLightSource(Ray rayFromCamera, Hit hit, Light light) {
 		Vec color = new Vec(0);
@@ -262,6 +286,13 @@ public class Scene {
 		return color;
 	}
 
+	/**
+	 * Given a ray and a light source, determine if some surface
+	 * in the scene blocks the ray to the light.
+	 * @param light - given light
+	 * @param ray - given ray to light
+	 * @return boolean that answers the criteria
+	 */
 	private boolean isLightOccluded(Light light, Ray ray){
 		for (Surface surface : this.surfaces) {
 			if (light.isOccludedBy(surface, ray)){
@@ -271,6 +302,13 @@ public class Scene {
 		return false;
 	}
 
+	/**
+	 * Calculates the diffuse color of a hit point with the ray
+	 * to a light source.
+	 * @param hit - given hit
+	 * @param rayToLight - given ray
+	 * @return a color vector.
+	 */
 	private Vec getDiffuse(Hit hit, Ray rayToLight) {
 		Vec normal = hit.getNormalToSurface();
 		Vec L = rayToLight.direction();
@@ -280,6 +318,15 @@ public class Scene {
 		return (dot < 0) ? new Vec() : Kd.mult(dot);
 	}
 
+	/**
+	 * Calculates the specular color of a hit point as seen from the
+	 * camera point of view with a reflected light, using shininess modeling
+	 * to calculate highlights on the surface at the intersection point.
+	 * @param hit - given hit
+	 * @param rayToLight - given ray to the light
+	 * @param rayFromCamera - given ray from the camera
+	 * @return a color vector.
+	 */
 	private Vec getSpecular(Hit hit, Ray rayToLight, Ray rayFromCamera) {
 		Surface surface =  hit.getSurface();
 		Vec Ks = surface.Ks();

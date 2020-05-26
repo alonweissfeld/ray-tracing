@@ -47,7 +47,7 @@ public class Sphere extends Shape {
 			double minT = t0;
 
 			if (t0 < Ops.epsilon && t1 < Ops.epsilon){
-				// no intersection found
+				// No intersection found
 				return null;
 			}
 
@@ -55,13 +55,13 @@ public class Sphere extends Shape {
 			boolean isWithinSphere = false;
 
 			if (t0 < Ops.epsilon && t1 >= Ops.epsilon){
-				// the ray source point is within the sphere
+				// The ray source point is within the sphere
 				minT = t1;
 				isWithinSphere = true;
 				normal = this.normalize(ray.add(t1)).neg();
 
 			} else {
-				// we found two intersection points, we take the closest one = t0.
+				// We found two intersection points, we take the closest one = t0.
 				normal = this.normalize(ray.add(t0));
 			}
 
