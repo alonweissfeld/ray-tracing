@@ -13,6 +13,8 @@ import edu.cg.scene.objects.Shape;
 import edu.cg.scene.objects.Sphere;
 import edu.cg.scene.objects.Surface;
 
+import java.util.Random;
+
 public class Scenes {
 	public static Scene scene1() {
 		Shape sphereShape1 = new Sphere(new Point(0.0), 1.0);
@@ -136,6 +138,56 @@ public class Scenes {
 		cutoffSpotlight.initIntensity(new Vec(.5,0.5,0.5));
 		finalScene.addLightSource(cutoffSpotlight);
 		
+		return finalScene;
+	}
+
+	/**
+	 * Defines an additional custom scene.
+	 * @return the created Scene
+	 */
+	public static Scene scene5() {
+		// Define basic properties of the scene
+		Scene finalScene = new Scene().initAmbient(new Vec(1.0))
+				.initCamera(/* Camera Position = */new Point(4, 2.0, 6.0),
+						/* Towards Vector = */ new Vec(0.0, -0.4 ,-1.0),
+						/* Up vector = */new Vec(0.0, 1.0, 0.0),
+						/*Distance to plain =*/ 15.0)
+				.initName("scene5").initAntiAliasingFactor(1)
+				.initAmbient(new Vec(0.5))
+				.initRenderRefarctions(false).initRenderReflections(true).initMaxRecursionLevel(9)
+				.initBackgroundColor(new Vec(Math.random(), Math.random(), Math.random()));
+
+		// Add Surfaces to the scene.
+		// (1) A plain that represents the ground floor.
+		Shape plainShape1 = new Plain(new Vec(0.0,1.0,0.0), new Point(0.0, -1.0, 0.0));
+		Surface plainSurface = new Surface(plainShape1, Material.getMetalMaterial());
+		finalScene.addSurface(plainSurface);
+
+		// (2) Add another plain
+		Shape plainShape2 = new Plain(new Vec(4, 20, 0), new Point(0, -2, 10));
+		Surface plainSurface2 = new Surface(plainShape2, Material.getGlassMaterial(false));
+		finalScene.addSurface(plainSurface2);
+
+		// (3) We will also add some random spheres.
+		int min = 0;
+		int max = 5;
+		int amount = 35;
+		for (int i = 0; i < amount; i++) {
+			Random rand = new Random();
+			int x = rand.nextInt((max - min) + 1) + min;
+			int y = 0;
+			int z = (rand.nextInt((max - min) + 1) + min);
+
+			double radius = min + (new Random()).nextDouble() * (1.2 - 0.4);
+			Shape sphere = new Sphere(new Point(x, y, z), radius);
+			Surface sphereSurface = new Surface(sphere, Material.getRandomMaterial());
+			finalScene.addSurface(sphereSurface);
+		}
+
+		// Add lighting condition:
+		DirectionalLight directionalLight=new DirectionalLight(new Vec(0.5,-0.5,0.0),new Vec(0.7));
+		finalScene.addLightSource(directionalLight);
+
 		return finalScene;
 	}
 	
