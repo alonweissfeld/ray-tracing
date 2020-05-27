@@ -198,11 +198,6 @@ public class Scene {
 			colorVec = colorVec.add(this.calcReflections(minHit, ray, recursionLevel));
 		}
 
-		Surface surface = minHit.getSurface();
-		if (this.renderRefarctions && surface.isTransparent()) {
-			colorVec = colorVec.add(this.calcRefractions(minHit, ray, recursionLevel, surface));
-		}
-
 		return colorVec;
 	}
 
@@ -222,25 +217,6 @@ public class Scene {
 		Point sourcePoint = ray.getHittingPoint(hit);
 		Vec color = this.calcColor(new Ray(sourcePoint, R), recLevel + 1);
 		return color.mult(w); // Apply the surface weight
-	}
-
-	/**
-	 *
-	 * @param hit
-	 * @param ray
-	 * @param recLevel
-	 * @param surface
-	 * @return
-	 */
-	private Vec calcRefractions(Hit hit, Ray ray, int recLevel, Surface surface) {
-		double n1 = surface.n1(hit);
-		double n2 = surface.n2(hit);
-		Vec T = Ops.refract(ray.direction(), hit.getNormalToSurface(), n1, n2);
-		Vec w = new Vec(surface.refractionIntensity());
-
-		Point sourcePoint = ray.getHittingPoint(hit);
-		Vec color = this.calcColor(new Ray(sourcePoint, T), recLevel + 1);
-		return color.mult(w);
 	}
 
 	/**
