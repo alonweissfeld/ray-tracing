@@ -10,6 +10,7 @@ public class PinholeCamera {
 
 	private Vec upVec;
 	private Vec rightVec;
+	private Vec towardsVec;
 
 	private double plainWidth;
 	private Point plainCenterPoint;
@@ -32,8 +33,9 @@ public class PinholeCamera {
 	public PinholeCamera(Point cameraPosition, Vec towardsVec, Vec upVec, double distanceToPlain) {
 		this.cameraPosition = cameraPosition;
 
-		this.upVec = upVec.normalize();
-		this.rightVec = towardsVec.normalize().cross(upVec).normalize();
+		this.towardsVec = towardsVec.normalize();
+		this.rightVec = this.towardsVec.cross(upVec).normalize();
+		this.upVec = this.rightVec.cross(this.towardsVec).normalize();
 
 		this.distanceToPlain = distanceToPlain;
 		this.plainCenterPoint = cameraPosition.add(towardsVec.normalize().mult(distanceToPlain));

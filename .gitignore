@@ -3,3 +3,5 @@ RayTracing.iml
 lib/
 out/
 scenes/
+
+.DS_Store
