@@ -169,16 +169,14 @@ public class Scenes {
 		finalScene.addSurface(plainSurface2);
 
 		// (3) We will also add some random spheres.
-		int min = 0;
-		int max = 5;
 		int amount = 35;
 		for (int i = 0; i < amount; i++) {
 			Random rand = new Random();
-			int x = rand.nextInt((max - min) + 1) + min;
-			int y = 0;
-			int z = (rand.nextInt((max - min) + 1) + min);
+			int x = rand.nextInt(6);
+			int y = rand.nextInt(2);
+			int z = rand.nextInt(6);
 
-			double radius = min + (new Random()).nextDouble() * (1.2 - 0.4);
+			double radius = (new Random()).nextDouble() * (0.6);
 			Shape sphere = new Sphere(new Point(x, y, z), radius);
 			Surface sphereSurface = new Surface(sphere, Material.getRandomMaterial());
 			finalScene.addSurface(sphereSurface);
